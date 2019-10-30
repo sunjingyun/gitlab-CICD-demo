@@ -1,0 +1,85 @@
+default:
+  before_script:
+    - echo Pipeline $CI_PIPELINE_ID Job $CI_JOB_ID Begin
+  after_script:
+    - echo Pipeline $CI_PIPELINE_ID Job $CI_JOB_ID End
+
+stages:
+  - mr
+  - test
+  - artifact
+  - deploy
+
+mr unit test:
+  image: node:10-stretch
+  only:
+    refs:
+      - merge_requests
+    changes:
+      - "**/*"
+      - "**/*.js"
+      - "**/*.json"
+  stage: mr
+  script:
+    - npm install
+    - npm run build
+    - npm run test
+
+unit test:
+  image: node:10-stretch
+  only:
+    refs:
+      - master
+  stage: test
+  cache:
+    key: chaos_node_modules
+    paths:
+      - /cache/node_modules
+  script:
+    - npm install
+    - npm run build
+    - npm run test
+
+docker build:
+  image: docker:stable-dind
+  services:
+    - docker:dind
+  only:
+    refs:
+      - master
+  stage: artifact
+  cache:
+    key: chaos_node_modules
+    paths:
+      - /cache/node_modules
+  script:
+    - ls
+    - docker build -t registry.cn-hangzhou.aliyuncs.com/qran/chaos:$CI_PIPELINE_ID .
+    - docker login -u $DOCKER_ACCOUNT -p $DOCKER_PASSWORD $DOCKER_REGISTRY
+    - docker push registry.cn-hangzhou.aliyuncs.com/qran/chaos:$CI_PIPELINE_ID
+
+deploy to development:
+  image: registry.cn-hangzhou.aliyuncs.com/qran/basic:helm-k8s
+  only:
+    refs:
+      - master
+  stage: deploy
+  variables:
+    KUBERNETES_NAMESPACE_OVERWRITE: "development"
+  script:
+    - helm upgrade --install chaos-dev --set image=registry.cn-hangzhou.aliyuncs.com/qran/chaos:$CI_PIPELINE_ID -f charts/values.yaml charts --wait --force
+
+release to production:
+  image: registry.cn-hangzhou.aliyuncs.com/qran/basic:helm-k8s
+  only:
+    refs:
+      - master
+  stage: deploy
+  variables:
+    KUBERNETES_NAMESPACE_OVERWRITE: "production"
+  script:
+    - helm upgrade --install chaos-prod --set image=registry.cn-hangzhou.aliyuncs.com/qran/chaos:$CI_PIPELINE_ID -f charts/values-production.yaml charts --wait --force
+  when: manual
+  environment:
+    name: production
+

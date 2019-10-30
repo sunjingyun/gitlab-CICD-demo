@@ -1,0 +1,19 @@
+{
+  "name": "chaos",
+  "version": "1.0.0",
+  "description": "chaos",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test/index.js",
+    "build": "echo Done!"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@39.100.136.17:sunjingyun/chaos.git"
+  },
+  "author": "sunjingyun",
+  "license": "ISC",
+  "dependencies": {
+    "mocha": "^6.2.1"
+  }
+}

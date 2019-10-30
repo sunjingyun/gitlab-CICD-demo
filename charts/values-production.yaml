@@ -1,0 +1,12 @@
+name: chaos
+service:
+  type: ClusterIP
+  port: 8080
+
+namespace: production
+replicaCount: 1
+
+image: __IMAGE_CHANGE__
+
+env:
+  NODE_ENV: production
