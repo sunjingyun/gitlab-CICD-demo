@@ -3,10 +3,10 @@ service:
   type: ClusterIP
   port: 8080
 
-namespace: development
+namespace: test
 replicaCount: 1
 
 image: __IMAGE_CHANGE__
 
 env:
-  NODE_ENV: development
+  NODE_ENV: test

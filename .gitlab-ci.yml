@@ -58,14 +58,14 @@ docker build:
     - docker login -u $DOCKER_ACCOUNT -p $DOCKER_PASSWORD $DOCKER_REGISTRY
     - docker push registry.cn-hangzhou.aliyuncs.com/qran/chaos:$CI_PIPELINE_ID
 
-deploy to development:
+deploy to test:
   image: registry.cn-hangzhou.aliyuncs.com/qran/basic:helm-k8s
   only:
     refs:
       - master
   stage: deploy
   variables:
-    KUBERNETES_NAMESPACE_OVERWRITE: "development"
+    KUBERNETES_NAMESPACE_OVERWRITE: "test"
   script:
     - helm upgrade --install chaos-dev --set image=registry.cn-hangzhou.aliyuncs.com/qran/chaos:$CI_PIPELINE_ID -f charts/values.yaml charts --wait --force
 
